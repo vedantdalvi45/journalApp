@@ -2,13 +2,19 @@ package com.example.journalApp.controller;
 
 import com.example.journalApp.entity.JournalEntry;
 import com.example.journalApp.service.JournalEntryService;
+import org.apache.coyote.Response;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.jar.JarOutputStream;
 
 @RestController
 @RequestMapping("/journal")
@@ -19,21 +25,32 @@ public class JournalEntryControllerV2 {
 
     @GetMapping
     public List<JournalEntry> getAllJournalEntries() {
+        System.out.println(journalEntryService.getAllJournalEntries().get(1).getId());
         return journalEntryService.getAllJournalEntries();
+
     }
 
 
     @PostMapping
-    public boolean createEntry(@RequestBody JournalEntry myEntry) {
-        myEntry.setDate(LocalDateTime.now());
+    public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry myEntry,
+                                                    HttpEntity<Object> httpEntity) {
+        try {
+            myEntry.setDate(LocalDateTime.now());
+            journalEntryService.saveJournalEntry(myEntry);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        }catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+        }
 
-        journalEntryService.saveJournalEntry(myEntry);
-        return true;
     }
 
     @GetMapping("id/{myId}")
-    public JournalEntry getEntry(@PathVariable ObjectId myId) {
-        return journalEntryService.getJournalEntryById(myId).orElse(null);
+    public ResponseEntity<JournalEntry> getEntry(@PathVariable ObjectId myId) {
+        Optional<JournalEntry> journalEntry = journalEntryService.getJournalEntryById(myId);
+        if (journalEntry.isPresent()){
+            return new ResponseEntity<>(journalEntry.get(),HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PutMapping("id/{myId}")

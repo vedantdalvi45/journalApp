@@ -2,6 +2,7 @@ package com.example.journalApp.controller;
 
 
 import com.example.journalApp.entity.JournalEntry;
+import org.bson.types.ObjectId;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -12,18 +13,18 @@ import java.util.Map;
 @RestController
 @RequestMapping("/_journal")
 public class JournalEntryController {
-    private Map<Long, JournalEntry> journalEntries = new HashMap<>();
+    private Map<String, JournalEntry> journalEntries = new HashMap<>();
 
     @GetMapping
     public List<JournalEntry> listJournalEntries() {
         return new ArrayList<>(journalEntries.values());
     }
 
-//    @PostMapping
-//    public boolean createEntry(@RequestBody JournalEntry myEntry) {
-//        journalEntries.put(myEntry.getId(), myEntry);
-//        return true;
-//    }
+    @PostMapping
+    public boolean createEntry(@RequestBody JournalEntry myEntry) {
+        journalEntries.put(String.valueOf(myEntry.getId()), myEntry);
+        return true;
+    }
 
     @GetMapping("id/{myId}")
     public JournalEntry getEntry(@PathVariable Long myId) {
@@ -31,8 +32,8 @@ public class JournalEntryController {
     }
 
     @PutMapping("id/{myId}")
-    public boolean updateJournal(@PathVariable Long myId, @RequestBody JournalEntry myEntry) {
-        journalEntries.put(myId, myEntry);
+    public boolean updateJournal(@PathVariable String myId, @RequestBody JournalEntry myEntry) {
+        journalEntries.put(String.valueOf(myEntry.getId()), myEntry);
         return true;
     }
 
